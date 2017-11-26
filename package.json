@@ -1,0 +1,24 @@
+{
+  "name": "code-challenge",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.17.1",
+    "emotion": "^8.0.11",
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
+    "react-google-maps": "^9.3.0",
+    "react-scripts": "1.0.17",
+    "rebass": "^1.0.4",
+    "recompose": "^0.26.0",
+    "sanitize.css": "^5.0.0",
+    "styled-components": "^2.2.3",
+    "styled-system": "^1.0.8"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
