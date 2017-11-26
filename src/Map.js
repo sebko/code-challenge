@@ -43,7 +43,7 @@ class MyMapComponent extends React.Component {
     handleUpdatedIncidentsWithinBounds(incidentsWithinBounds)
   }
   render() {
-    const { incidents, incidentsWithinBounds, selectedIncidentId } = this.state
+    const { incidents, selectedIncidentId } = this.state
     return (
       <GoogleMap
         defaultZoom={8}
