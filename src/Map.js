@@ -1,29 +1,32 @@
 import {
   GoogleMap,
+  InfoWindow,
   Marker,
   withGoogleMap,
   withScriptjs,
 } from 'react-google-maps'
+import { Text } from 'rebass'
 import { compose, withProps } from 'recompose'
 import React from 'react'
-
-import data from './data'
+import axios from 'axios'
 
 class MyMapComponent extends React.Component {
   state = {
     incidents: [],
     incidentsWithinBounds: [],
+    selectedIncidentId: undefined,
   }
   componentDidMount() {
     const proxyurl = 'https://crossorigin.me/'
     const url = 'https://victraffic-api.wd.com.au/api/v3/incidents'
-    const { incidents } = data
-    this.setState({ incidents })
-    // axios.get(proxyurl + url).then(({ data }) => {
-    //   const { incidents } = data
-    //   this.setState({ incidents })
-    //   this.handleOnBoundsChanged()
-    // })
+    axios.get(proxyurl + url).then(({ data }) => {
+      const { incidents } = data
+      this.setState({ incidents })
+      this.handleOnBoundsChanged()
+    })
+  }
+  setSelectedIncidentId = incidentId => () => {
+    this.setState({ selectedIncidentId: incidentId })
   }
   handleOnBoundsChanged = () => {
     const { handleUpdatedIncidentsWithinBounds } = this.props
@@ -40,7 +43,7 @@ class MyMapComponent extends React.Component {
     handleUpdatedIncidentsWithinBounds(incidentsWithinBounds)
   }
   render() {
-    const { incidents, incidentsWithinBounds } = this.state
+    const { incidents, incidentsWithinBounds, selectedIncidentId } = this.state
     return (
       <GoogleMap
         defaultZoom={8}
@@ -48,14 +51,38 @@ class MyMapComponent extends React.Component {
         ref={map => (this.map = map)}
         onBoundsChanged={this.handleOnBoundsChanged}
       >
-        {incidents.map(incident => (
+        {incidents.map(({ id, lat, long, title, alert_type }) => (
           <Marker
-            key={incident.id}
+            key={id}
             position={{
-              lat: Number(incident.lat),
-              lng: Number(incident.long),
+              lat: Number(lat),
+              lng: Number(long),
             }}
-          />
+            onClick={this.setSelectedIncidentId(id)}
+          >
+            <div>
+              {selectedIncidentId === id && (
+                <InfoWindow
+                  onCloseClick={this.setSelectedIncidentId(undefined)}
+                >
+                  <div>
+                    <div>
+                      <Text is="span" bold>
+                        Title:
+                      </Text>{' '}
+                      <Text is="span">{title}</Text>
+                    </div>
+                    <div>
+                      <Text is="span" bold>
+                        Alert type:
+                      </Text>{' '}
+                      <Text is="span">{alert_type}</Text>
+                    </div>
+                  </div>
+                </InfoWindow>
+              )}
+            </div>
+          </Marker>
         ))}
       </GoogleMap>
     )
@@ -67,7 +94,7 @@ export default compose(
     googleMapURL:
       'https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyBU_UR_VVEPRMxbdbnx9SZTOKKc1CXcbzA&libraries=geometry,drawing,places',
     loadingElement: <div style={{ height: `100%` }} />,
-    containerElement: <div style={{ height: `100vh` }} />,
+    containerElement: <div style={{ height: `100%`, width: '100%' }} />,
     mapElement: <div style={{ height: `100%` }} />,
   }),
   withScriptjs,
