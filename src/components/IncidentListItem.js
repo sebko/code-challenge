@@ -7,6 +7,11 @@ const Wrapper = styled(Border)`
   &:last-child {
     margin-bottom: 3.5rem;
   }
+  @media screen and (min-width: ${({ theme }) => theme.breakpoints[0]}em) {
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 `
 
 export default ({ incident }) => {

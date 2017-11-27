@@ -11,33 +11,20 @@ import React from 'react'
 
 class Map extends React.Component {
   state = {
-    incidentsWithinBounds: [],
     selectedIncidentId: undefined,
   }
   setSelectedIncidentId = incidentId => () => {
     this.setState({ selectedIncidentId: incidentId })
   }
-  handleOnBoundsChanged = () => {
-    const { incidents } = this.props
-    const bounds = this.map && this.map.getBounds()
-    var southWest = bounds.getSouthWest()
-    var northEast = bounds.getNorthEast()
-    var Bounds = new window.google.maps.LatLngBounds(southWest, northEast)
-    const incidentsWithinBounds = incidents.filter(incident =>
-      Bounds.contains(
-        new window.google.maps.LatLng(incident.lat, incident.long)
-      )
-    )
-    this.setState({ incidentsWithinBounds })
-  }
   render() {
-    const { selectedIncidentId, incidentsWithinBounds } = this.state
+    const { onBoundsChanged, mapRef, incidentsWithinBounds } = this.props
+    const { selectedIncidentId } = this.state
     return (
       <GoogleMap
         defaultZoom={8}
         defaultCenter={{ lat: -37.813603, lng: 144.962559 }}
-        ref={map => (this.map = map)}
-        onBoundsChanged={this.handleOnBoundsChanged}
+        ref={mapRef}
+        onBoundsChanged={onBoundsChanged}
       >
         {incidentsWithinBounds.map(({ id, lat, long, title, alert_type }) => (
           <Marker

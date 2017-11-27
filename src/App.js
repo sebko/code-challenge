@@ -12,6 +12,7 @@ import Flex from './components/Flex'
 import IncidentListItem from './components/IncidentListItem'
 import Map from './Map'
 import Spinner from './Spinner'
+import localData from './data'
 import ToggleIncidentListButton from './components/ToggleIncidentListButton'
 
 const Container = styled(Flex)`
@@ -35,11 +36,30 @@ class App extends React.Component {
   componentDidMount() {
     const url = 'https://victraffic-api.wd.com.au/api/v3/incidents'
     this.setState({ isFetching: true }, () => {
-      axios.get(url).then(({ data }) => {
-        const { incidents } = data
-        this.setState({ incidents, isFetching: false })
-      })
+      axios.get(url).then(
+        ({ data }) => {
+          const { incidents } = data
+          this.setState({ incidents, isFetching: false })
+        },
+        () => {
+          const { incidents } = localData
+          this.setState({ incidents, isFetching: false })
+        }
+      )
     })
+  }
+  handleOnBoundsChanged = () => {
+    const { incidents } = this.state
+    const bounds = this.map && this.map.getBounds()
+    var southWest = bounds.getSouthWest()
+    var northEast = bounds.getNorthEast()
+    var Bounds = new window.google.maps.LatLngBounds(southWest, northEast)
+    const incidentsWithinBounds = incidents.filter(incident =>
+      Bounds.contains(
+        new window.google.maps.LatLng(incident.lat, incident.long)
+      )
+    )
+    this.setState({ incidentsWithinBounds })
   }
   toggleIncidentList = () => {
     this.setState(({ isListOpen }) => ({
@@ -65,10 +85,9 @@ class App extends React.Component {
           </IncidentListContainer>
           <MapContainer w={['100%', 8 / 10]}>
             <Map
-              handleUpdatedIncidentsWithinBounds={
-                this.handleUpdatedIncidentsWithinBounds
-              }
-              incidents={incidents}
+              onBoundsChanged={this.handleOnBoundsChanged}
+              incidentsWithinBounds={incidentsWithinBounds}
+              mapRef={el => console.log(el) || (this.map = el)}
             />
           </MapContainer>
           <ToggleIncidentListButton
@@ -76,13 +95,13 @@ class App extends React.Component {
             px={2}
             py={3}
           >
-            {isFetching ? (
-              <Spinner />
-            ) : (
+            {!isFetching && incidentsWithinBounds.length > 0 ? (
               <div>
                 {isListOpen ? 'Hide' : 'Show'} incident list&nbsp;
                 {incidentsWithinBounds.length}
               </div>
+            ) : (
+              <Spinner />
             )}
           </ToggleIncidentListButton>
         </Container>
