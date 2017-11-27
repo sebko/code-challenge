@@ -7,4 +7,4 @@ npm install
 npm start
 ```
 
-visit: https://code-challenge-slfwmiffgw.now.sh/
+visit: https://build-nlxjlmnadx.now.sh/
