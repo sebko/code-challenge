@@ -8,29 +8,17 @@ import {
 import { Text } from 'rebass'
 import { compose, withProps } from 'recompose'
 import React from 'react'
-import axios from 'axios'
 
-class MyMapComponent extends React.Component {
+class Map extends React.Component {
   state = {
-    incidents: [],
     incidentsWithinBounds: [],
     selectedIncidentId: undefined,
-  }
-  componentDidMount() {
-    const proxyurl = 'https://crossorigin.me/'
-    const url = 'https://victraffic-api.wd.com.au/api/v3/incidents'
-    axios.get(proxyurl + url).then(({ data }) => {
-      const { incidents } = data
-      this.setState({ incidents })
-      this.handleOnBoundsChanged()
-    })
   }
   setSelectedIncidentId = incidentId => () => {
     this.setState({ selectedIncidentId: incidentId })
   }
   handleOnBoundsChanged = () => {
-    const { handleUpdatedIncidentsWithinBounds } = this.props
-    const { incidents } = this.state
+    const { incidents } = this.props
     const bounds = this.map && this.map.getBounds()
     var southWest = bounds.getSouthWest()
     var northEast = bounds.getNorthEast()
@@ -40,10 +28,10 @@ class MyMapComponent extends React.Component {
         new window.google.maps.LatLng(incident.lat, incident.long)
       )
     )
-    handleUpdatedIncidentsWithinBounds(incidentsWithinBounds)
+    this.setState({ incidentsWithinBounds })
   }
   render() {
-    const { incidents, selectedIncidentId } = this.state
+    const { selectedIncidentId, incidentsWithinBounds } = this.state
     return (
       <GoogleMap
         defaultZoom={8}
@@ -51,7 +39,7 @@ class MyMapComponent extends React.Component {
         ref={map => (this.map = map)}
         onBoundsChanged={this.handleOnBoundsChanged}
       >
-        {incidents.map(({ id, lat, long, title, alert_type }) => (
+        {incidentsWithinBounds.map(({ id, lat, long, title, alert_type }) => (
           <Marker
             key={id}
             position={{
@@ -99,4 +87,4 @@ export default compose(
   }),
   withScriptjs,
   withGoogleMap
-)(MyMapComponent)
+)(Map)

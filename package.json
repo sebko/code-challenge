@@ -9,6 +9,7 @@
     "react-dom": "^16.1.1",
     "react-google-maps": "^9.3.0",
     "react-scripts": "1.0.17",
+    "react-spinkit": "^3.0.0",
     "rebass": "^1.0.4",
     "recompose": "^0.26.0",
     "sanitize.css": "^5.0.0",

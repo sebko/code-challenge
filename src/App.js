@@ -4,13 +4,14 @@ import './globalStyles'
 
 import { Provider } from 'rebass'
 import React from 'react'
+import axios from 'axios'
 import styled from 'styled-components'
-
-import Map from './Map'
 
 import { IncidentList, IncidentListContainer } from './components/IncidentList'
 import Flex from './components/Flex'
 import IncidentListItem from './components/IncidentListItem'
+import Map from './Map'
+import Spinner from './Spinner'
 import ToggleIncidentListButton from './components/ToggleIncidentListButton'
 
 const Container = styled(Flex)`
@@ -26,11 +27,19 @@ const MapContainer = styled(Flex)`
 
 class App extends React.Component {
   state = {
+    incidents: [],
     incidentsWithinBounds: [],
     isListOpen: false,
+    isFetching: undefined,
   }
-  handleUpdatedIncidentsWithinBounds = incidentsWithinBounds => {
-    this.setState({ incidentsWithinBounds })
+  componentDidMount() {
+    const url = 'https://victraffic-api.wd.com.au/api/v3/incidents'
+    this.setState({ isFetching: true }, () => {
+      axios.get(url).then(({ data }) => {
+        const { incidents } = data
+        this.setState({ incidents, isFetching: false })
+      })
+    })
   }
   toggleIncidentList = () => {
     this.setState(({ isListOpen }) => ({
@@ -38,7 +47,12 @@ class App extends React.Component {
     }))
   }
   render() {
-    const { incidentsWithinBounds, isListOpen } = this.state
+    const {
+      incidentsWithinBounds,
+      isListOpen,
+      incidents,
+      isFetching,
+    } = this.state
     return (
       <Provider>
         <Container>
@@ -54,6 +68,7 @@ class App extends React.Component {
               handleUpdatedIncidentsWithinBounds={
                 this.handleUpdatedIncidentsWithinBounds
               }
+              incidents={incidents}
             />
           </MapContainer>
           <ToggleIncidentListButton
@@ -61,8 +76,14 @@ class App extends React.Component {
             px={2}
             py={3}
           >
-            {isListOpen ? 'Hide' : 'Show'} incident list&nbsp;
-            {incidentsWithinBounds.length}
+            {isFetching ? (
+              <Spinner />
+            ) : (
+              <div>
+                {isListOpen ? 'Hide' : 'Show'} incident list&nbsp;
+                {incidentsWithinBounds.length}
+              </div>
+            )}
           </ToggleIncidentListButton>
         </Container>
       </Provider>

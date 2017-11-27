@@ -1,5 +1,7 @@
-import { Flex } from 'rebass'
+import React from 'react'
 import styled from 'styled-components'
+
+import Flex from './Flex'
 
 export const IncidentList = styled.div`
   display: ${({ isListOpen }) => (isListOpen ? 'flex' : 'none')};
@@ -9,7 +11,9 @@ export const IncidentList = styled.div`
     display: flex;
   }
 `
-export const IncidentListContainer = styled(Flex)`
+export const IncidentListContainer = styled(({ isListOpen, ...rest }) => (
+  <Flex {...rest} />
+))`
   z-index: 1;
   background: white;
   overflow-y: scroll;
