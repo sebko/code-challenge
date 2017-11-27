@@ -12,8 +12,8 @@ import Flex from './components/Flex'
 import IncidentListItem from './components/IncidentListItem'
 import Map from './Map'
 import Spinner from './Spinner'
-import localData from './data'
 import ToggleIncidentListButton from './components/ToggleIncidentListButton'
+import localData from './data'
 
 const Container = styled(Flex)`
   height: 100%;
@@ -34,16 +34,28 @@ class App extends React.Component {
     isFetching: undefined,
   }
   componentDidMount() {
+    const proxyurl = 'https://crossorigin.me/'
     const url = 'https://victraffic-api.wd.com.au/api/v3/incidents'
+    const config = {
+      method: 'get',
+      url: proxyurl + url,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    }
     this.setState({ isFetching: true }, () => {
-      axios.get(url).then(
+      axios(config).then(
         ({ data }) => {
           const { incidents } = data
           this.setState({ incidents, isFetching: false })
+          this.handleOnBoundsChanged()
         },
         () => {
           const { incidents } = localData
+          alert('using local data')
           this.setState({ incidents, isFetching: false })
+          this.handleOnBoundsChanged()
         }
       )
     })
@@ -67,16 +79,16 @@ class App extends React.Component {
     }))
   }
   render() {
-    const {
-      incidentsWithinBounds,
-      isListOpen,
-      incidents,
-      isFetching,
-    } = this.state
+    const { incidentsWithinBounds, isListOpen, isFetching } = this.state
     return (
       <Provider>
         <Container>
           <IncidentListContainer column isListOpen={isListOpen}>
+            {isFetching && (
+              <Flex mt={4}>
+                <Spinner />
+              </Flex>
+            )}
             <IncidentList isListOpen={isListOpen}>
               {incidentsWithinBounds.map(incident => (
                 <IncidentListItem incident={incident} key={incident.id} />
@@ -87,7 +99,7 @@ class App extends React.Component {
             <Map
               onBoundsChanged={this.handleOnBoundsChanged}
               incidentsWithinBounds={incidentsWithinBounds}
-              mapRef={el => console.log(el) || (this.map = el)}
+              mapRef={el => (this.map = el)}
             />
           </MapContainer>
           <ToggleIncidentListButton
@@ -95,7 +107,7 @@ class App extends React.Component {
             px={2}
             py={3}
           >
-            {!isFetching && incidentsWithinBounds.length > 0 ? (
+            {isFetching === false ? (
               <div>
                 {isListOpen ? 'Hide' : 'Show'} incident list&nbsp;
                 {incidentsWithinBounds.length}
